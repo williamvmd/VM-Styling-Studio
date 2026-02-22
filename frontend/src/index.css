@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  background: #ffffff;
+  color: #000000;
+}
+
+::selection {
+  background: rgba(0, 0, 0, 0.1);
+  color: #000000;
+}
+
