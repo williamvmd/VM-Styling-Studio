@@ -10,7 +10,10 @@ export const generateFashionImage = async (
   pose: Pose,
   apiKey: string
 ): Promise<string> => {
-  const customBaseUrl = "http://zx2.52youxi.cc:3000";
+  // If running on Vercel (not localhost), use the Vercel rewrite proxy to avoid Mixed Content (HTTPS -> HTTP) errors
+  const isProd = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+  const customBaseUrl = isProd ? "/api/gemini" : "http://zx2.52youxi.cc:3000";
+
   // The SDK would usually call /v1beta/models/{model}:generateContent
   // Depending on how your proxy is setup, either /api represents the root or you need the full path.
   // Assuming the proxy is a direct passthrough of Google's API path:

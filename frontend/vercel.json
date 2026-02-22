@@ -1,0 +1,12 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/gemini/(.*)",
+            "destination": "http://zx2.52youxi.cc:3000/$1"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}
