@@ -28,19 +28,19 @@ GOAL
 Create a full-body standing fashion photo of ONE consistent model identity, following the selected pose ID and styling reference.
 
 HARD VISION LOCKS (MUST FOLLOW OR FAIL):
-1) Identity: The face identity MUST match the provided face reference exactly. Do not change facial structure, age, ethnicity, or expression style.
-2) Garment Color & Fit (CRITICAL): Clothing items MUST exactly match the uploaded garment images (top, bottom, shoes, sunglasses) in color, design, logos, patterns, stitching, silhouette, and fit. DO NOT alter the color in any lighting condition. The fit must be precisely true to the provided reference images without redesigning anything.
+1) Identity: 不要随意改动上传人物的相貌！The face identity MUST match the provided face reference exactly. Do not change facial structure, age, ethnicity, or expression style.
+2) Garment Color & Fit (CRITICAL): 服装色彩真实还原，无任何偏色，服装版型精准呈现，展现真实的质感与细节。不要改动上传图片中服装的设计细节和颜色！Clothing items MUST exactly match the uploaded garment images (top, bottom, shoes, sunglasses) in color, design, logos, patterns, stitching, silhouette, and fit.
 3) Accessories: STRICTLY use ONLY the provided accessory images. If a specific accessory category is NOT provided, the subject MUST be bare of that item. Do not add unrequested items to "complete the look."
 4) Body Spec: 8.5-head proportion, supermodel physique, idealized long legs with smooth clean lines, elegant posture, fashion-forward.
 5) Clean Output: NO text, NO watermark, NO countdown overlay, NO UI elements embedded in the image.
 
 PHOTOGRAPHY & COMPOSITION QUALITY:
 - Full-body, standing pose, head-to-toe visible, centered or slightly off-center editorial framing.
-- Resolution & Details: 高清分辨率 (High-res), 超清细节表现 (hyper-detailed).
-- Style & Mood: 专业时尚摄影风格 (professional fashion photography), 杂志封面级质感 (magazine cover quality), 国际一线大片水准 (international blockbuster level).
-- Skin & Texture: 逼真的皮肤质感 (realistic skin texture), no plastic skin.
-- Lighting: 柔和均匀的光线布局 (soft even lighting), 电影级别的光影效果 (cinematic lighting), refined shadows. 
-- Appearance: Ultra high resolution, 4K look, luxury, clean, no blur, no noise.
+- Resolution & Details: 超清细节 (hyper-detailed), 高清 2K 分辨率 (High-res 2K).
+- Style & Mood: 采用专业时尚摄影风格，杂志封面质感，展现出国际一线时尚大片 (professional fashion photography, magazine cover quality, international blockbuster level).
+- Skin & Texture: 皮肤真实质感 (realistic skin texture), no plastic skin.
+- Lighting: 光线柔和且均匀，电影级光影 (soft even lighting, cinematic lighting), refined shadows. 
+- Appearance: Ultra high resolution, 2K output, 9:16 aspect ratio, luxury, clean, no blur, no noise.
 
 - Background mode: {{background_mode}}
   - if white: pure white seamless studio background, even soft lighting, minimal shadows.

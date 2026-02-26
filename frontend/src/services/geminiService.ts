@@ -25,7 +25,11 @@ export const generateFashionImage = async (
     .replace('{{pose_id}}', pose.id)
     .replace('{{pose_description}}', pose.description);
 
-  const finalPrompt = `${prompt}\n${NEGATIVE_PROMPT}`;
+  let finalPrompt = `${prompt}\n${NEGATIVE_PROMPT}`;
+
+  if (state.customPrompt && state.customPrompt.trim()) {
+    finalPrompt += `\n\nUSER ADDITIONAL STYLING REQUEST:\n${state.customPrompt.trim()}`;
+  }
 
   // Collect Parts
   const parts: any[] = [{ text: finalPrompt }];

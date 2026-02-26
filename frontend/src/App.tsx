@@ -22,6 +22,8 @@ const INITIAL_STATE: AppState = {
   history: [],
   currentSessionId: null,
   error: null,
+  customPrompt: '',
+  apiKey: localStorage.getItem('GEMINI_API_KEY') || '',
 };
 
 const App: React.FC = () => {
@@ -89,12 +91,16 @@ const App: React.FC = () => {
       }
     }
 
-    // @ts-ignore
-    const apiKey = (process.env as any).API_KEY || prompt("Please enter your Google AI API Key:");
-    if (!apiKey) {
-      setState(s => ({ ...s, error: 'API Key missing. Please provide your API key.' }));
+    // API Key handling
+    const finalApiKey = (process.env as any).API_KEY || state.apiKey.trim();
+
+    if (!finalApiKey) {
+      setState(s => ({ ...s, error: 'API Key missing. Please paste your Google AI API Key in the settings above.' }));
       return;
     }
+
+    // Save to local storage for future sessions
+    localStorage.setItem('GEMINI_API_KEY', finalApiKey);
 
     if (!state.inputs.stylingRef || !state.inputs.faceRef) {
       setState(s => ({ ...s, error: 'Please upload Styling Reference and Face Reference.' }));
@@ -110,7 +116,7 @@ const App: React.FC = () => {
 
     try {
       const orderedPoses = state.selectedPoses.map(id => availablePoses.find(p => p.id === id)).filter(Boolean) as Pose[];
-      const promises = orderedPoses.map(pose => generateFashionImage(state, pose, apiKey));
+      const promises = orderedPoses.map(pose => generateFashionImage(state, pose, finalApiKey));
       const results = await Promise.all(promises);
 
       setGeneratedImages(results);
@@ -124,7 +130,8 @@ const App: React.FC = () => {
           poseIds: state.selectedPoses,
           gender: state.gender,
           backgroundMode: state.backgroundMode,
-          model: state.selectedModel
+          model: state.selectedModel,
+          customPrompt: state.customPrompt
         },
         outputs: results
       };
@@ -138,8 +145,10 @@ const App: React.FC = () => {
 
     } catch (err: any) {
       let errorMessage = err.message || 'Generation failed';
-      if (errorMessage.includes('403') || errorMessage.includes('PERMISSION_DENIED')) {
-        errorMessage = 'Permission denied. Try switching to "Gemini Flash" or ensure your API Key has access to the Pro model.';
+      if (errorMessage.includes('403') || errorMessage.includes('PERMISSION_DENIED') || errorMessage.includes('API_KEY_INVALID')) {
+        errorMessage = 'API Key 无效或权限不足，已清除保存的 Key。请重新输入正确的 Key。';
+        localStorage.removeItem('GEMINI_API_KEY');
+        setState(s => ({ ...s, apiKey: '' }));
       }
       setState(s => ({ ...s, isGenerating: false, error: errorMessage }));
     } finally {
@@ -180,6 +189,22 @@ const App: React.FC = () => {
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
                   <ChevronRight className="w-4 h-4 rotate-90" strokeWidth={1.5} />
                 </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 min-w-[200px] flex-1">
+              <label className="text-[10px] tracking-wider uppercase font-bold text-gray-400">Google API Key</label>
+              <div className="relative border-b border-gray-200 pb-2">
+                <input
+                  type="password"
+                  value={state.apiKey}
+                  onChange={(e) => {
+                    setState(s => ({ ...s, apiKey: e.target.value }));
+                    localStorage.setItem('GEMINI_API_KEY', e.target.value);
+                  }}
+                  placeholder="Paste AI Key here..."
+                  className="appearance-none bg-transparent font-sans text-sm text-gray-600 w-full focus:outline-none"
+                />
               </div>
             </div>
 
@@ -252,6 +277,17 @@ const App: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {/* Row 3: Custom Prompt */}
+          <div className="w-full mt-2">
+            <textarea
+              value={state.customPrompt}
+              onChange={(e) => setState(s => ({ ...s, customPrompt: e.target.value }))}
+              placeholder="需要补充的其他提示词 (例如: '红色背景', '赛博朋克风格')..."
+              className="w-full bg-transparent border border-gray-100 p-3 text-xs text-gray-700 focus:outline-none focus:border-gray-300 resize-none font-sans"
+              rows={2}
+            />
+          </div>
         </div>
 
         {state.error && (
@@ -287,8 +323,8 @@ const App: React.FC = () => {
             <h3 className="font-sans text-xs font-bold uppercase tracking-widest mb-6 border-b border-gray-100 pb-2 text-gray-900">Wardrobe</h3>
             <div className="grid grid-cols-2 gap-4">
               <UploadSlot label="Top" image={state.inputs.clothes.top} onUpload={(f) => updateInput('clothes', 'top', f)} onClear={() => updateInput('clothes', 'top', null)} />
-              <UploadSlot label="Bottom" image={state.inputs.clothes.bottom} onUpload={(f) => updateInput('clothes', 'bottom', f)} onClear={() => updateInput('clothes', 'bottom', null)} />
               <UploadSlot label="Shoes" image={state.inputs.clothes.shoes} onUpload={(f) => updateInput('clothes', 'shoes', f)} onClear={() => updateInput('clothes', 'shoes', null)} />
+              <UploadSlot label="Bottom" image={state.inputs.clothes.bottom} onUpload={(f) => updateInput('clothes', 'bottom', f)} onClear={() => updateInput('clothes', 'bottom', null)} />
               <UploadSlot label="Sunglasses" image={state.inputs.clothes.sunglasses} onUpload={(f) => updateInput('clothes', 'sunglasses', f)} onClear={() => updateInput('clothes', 'sunglasses', null)} />
             </div>
           </div>

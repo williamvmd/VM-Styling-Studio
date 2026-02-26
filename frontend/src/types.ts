@@ -43,6 +43,7 @@ export interface Session {
     gender: Gender;
     backgroundMode: BackgroundMode;
     model: ModelTier;
+    customPrompt: string;
   };
   outputs: string[]; // URLs/Base64 of generated images
 }
@@ -58,6 +59,8 @@ export interface AppState {
   history: Session[];
   currentSessionId: string | null;
   error: string | null;
+  customPrompt: string;
+  apiKey: string;
 }
 
 declare global {
