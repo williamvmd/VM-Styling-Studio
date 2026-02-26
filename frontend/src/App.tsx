@@ -92,7 +92,7 @@ const App: React.FC = () => {
     }
 
     // API Key handling
-    const finalApiKey = (process.env as any).API_KEY || state.apiKey.trim();
+    const finalApiKey = state.apiKey.trim();
 
     if (!finalApiKey) {
       setState(s => ({ ...s, error: 'API Key missing. Please paste your Google AI API Key in the settings above.' }));
