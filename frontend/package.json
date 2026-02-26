@@ -1,7 +1,7 @@
 {
   "name": "vm-studio-frontend",
   "version": "1.0.0",
-  "homepage": "https://williamvmd.github.io/-Nano-Banana-Pro-AI-Powered-Visual-Merchandising-Styling-Engine/",
+  "homepage": "https://williamvmd.github.io/VM-Styling-Studio/",
   "type": "module",
   "scripts": {
     "dev": "vite",
