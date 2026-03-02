@@ -1,6 +1,7 @@
 export type Gender = 'female' | 'male';
 export type BackgroundMode = 'white' | 'keep_original';
-export type ModelTier = 'gemini-3-pro-image-preview' | 'gemini-2.5-flash-image';
+export type ModelTier = 'gemini-3-pro-image-preview' | 'gemini-3.1-flash-image-preview';
+export type AspectRatio = '9:16' | '16:9' | '1:1' | '3:4' | '4:3';
 
 export interface Pose {
   id: string;
@@ -43,6 +44,7 @@ export interface Session {
     gender: Gender;
     backgroundMode: BackgroundMode;
     model: ModelTier;
+    aspectRatio: AspectRatio;
     customPrompt: string;
   };
   outputs: string[]; // URLs/Base64 of generated images
@@ -53,6 +55,7 @@ export interface AppState {
   backgroundMode: BackgroundMode;
   selectedPoses: string[];
   selectedModel: ModelTier;
+  aspectRatio: AspectRatio;
   inputs: GenerationInputs;
   isGenerating: boolean;
   progressSeconds: number;

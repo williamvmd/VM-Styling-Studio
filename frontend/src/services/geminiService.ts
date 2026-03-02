@@ -11,9 +11,7 @@ export const generateFashionImage = async (
   apiKey: string
 ): Promise<string> => {
   // For GitHub Pages deployment, we must call the Google API directly via HTTPS
-  // Local development can still use the proxy if needed, but direct API is safer for CORS
-  const isProd = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-  const customBaseUrl = isProd ? "https://generativelanguage.googleapis.com" : "http://zx2.52youxi.cc:3000";
+  const customBaseUrl = "https://ssl.52youxi.cc";
 
   // The SDK would usually call /v1beta/models/{model}:generateContent
   // Depending on how your proxy is setup, either /api represents the root or you need the full path.
@@ -72,7 +70,7 @@ export const generateFashionImage = async (
         contents: [{ role: "user", parts }],
         generationConfig: {
           temperature: 1.0,
-          aspectRatio: "9:16",
+          aspectRatio: state.aspectRatio,
         },
       }),
     });

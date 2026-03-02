@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Menu, Zap, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 import UploadSlot from './components/UploadSlot';
 import HistoryDrawer from './components/HistoryDrawer';
-import { AppState, ModelTier, UploadedImage, Session, Pose } from './types';
+import { AppState, ModelTier, UploadedImage, Session, Pose, AspectRatio } from './types';
 import { FEMALE_POSES, MALE_POSES } from './constants';
 import { generateFashionImage } from './services/geminiService';
 
@@ -10,7 +10,8 @@ const INITIAL_STATE: AppState = {
   gender: 'female',
   backgroundMode: 'white',
   selectedPoses: ['F1'],
-  selectedModel: 'gemini-3-pro-image-preview',
+  selectedModel: 'gemini-3.1-flash-image-preview',
+  aspectRatio: '9:16',
   inputs: {
     stylingRef: null,
     faceRef: null,
@@ -131,6 +132,7 @@ const App: React.FC = () => {
           gender: state.gender,
           backgroundMode: state.backgroundMode,
           model: state.selectedModel,
+          aspectRatio: state.aspectRatio,
           customPrompt: state.customPrompt
         },
         outputs: results
@@ -171,11 +173,11 @@ const App: React.FC = () => {
         </button>
       </header>
 
-      <div className="sticky top-0 z-30 bg-white border-b border-gray-100 px-6 md:px-12 py-6 shadow-[0_4px_20px_-15px_rgba(0,0,0,0.05)]">
+      <div className="relative bg-white border-b border-gray-100 px-6 md:px-12 py-6 shadow-[0_4px_20px_-15px_rgba(0,0,0,0.05)]">
         <div className="flex flex-col gap-8 max-w-[1400px]">
-          {/* Row 1: Model, Background, Gender */}
-          <div className="flex flex-wrap gap-12 items-start">
-            <div className="flex flex-col gap-3 min-w-[200px]">
+          {/* Row 1: Model, Background, Gender, Aspect Ratio */}
+          <div className="flex flex-col md:flex-row flex-wrap gap-8 md:gap-12 items-start">
+            <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[200px]">
               <label className="text-[10px] tracking-wider uppercase font-bold text-gray-400">Model</label>
               <div className="relative border-b border-gray-200 pb-2">
                 <select
@@ -184,7 +186,7 @@ const App: React.FC = () => {
                   className="appearance-none bg-transparent font-sans text-sm text-gray-600 w-full cursor-pointer focus:outline-none"
                 >
                   <option value="gemini-3-pro-image-preview">Nano Banana Pro</option>
-                  <option value="gemini-2.5-flash-image">Gemini Flash</option>
+                  <option value="gemini-3.1-flash-image-preview">Nano banana2</option>
                 </select>
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
                   <ChevronRight className="w-4 h-4 rotate-90" strokeWidth={1.5} />
@@ -192,7 +194,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 min-w-[200px] flex-1">
+            <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[200px] md:flex-1">
               <label className="text-[10px] tracking-wider uppercase font-bold text-gray-400">Google API Key</label>
               <div className="relative border-b border-gray-200 pb-2">
                 <input
@@ -208,61 +210,109 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 w-full sm:w-auto">
               <label className="text-[10px] tracking-wider uppercase font-bold text-gray-400">Background</label>
-              <div className="flex">
+              <div className="flex w-full">
                 <button
                   onClick={() => setState(s => ({ ...s, backgroundMode: 'white' }))}
-                  className={`text-xs px-6 py-2.5 tracking-widest transition-colors font-medium border ${state.backgroundMode === 'white' ? 'bg-black text-white border-black' : 'text-gray-400 border-gray-100 hover:border-gray-300'
+                  className={`text-xs px-4 sm:px-6 py-2.5 flex-1 sm:flex-none tracking-widest transition-colors font-medium border ${state.backgroundMode === 'white' ? 'bg-black text-white border-black' : 'text-gray-400 border-gray-100 hover:border-gray-300'
                     }`}
                 >WHITE</button>
                 <button
                   onClick={() => setState(s => ({ ...s, backgroundMode: 'keep_original' }))}
-                  className={`text-xs px-6 py-2.5 tracking-widest transition-colors font-medium border-y border-r ${state.backgroundMode === 'keep_original' ? 'bg-black text-white border-black' : 'text-gray-400 border-gray-100 hover:border-gray-300'
+                  className={`text-xs px-4 sm:px-6 py-2.5 flex-1 sm:flex-none tracking-widest transition-colors font-medium border-y border-r ${state.backgroundMode === 'keep_original' ? 'bg-black text-white border-black' : 'text-gray-400 border-gray-100 hover:border-gray-300'
                     }`}
                 >ORIGINAL</button>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 w-full sm:w-auto">
               <label className="text-[10px] tracking-wider uppercase font-bold text-gray-400">Gender</label>
-              <div className="flex">
+              <div className="flex w-full">
                 <button
                   onClick={() => setState(s => ({ ...s, gender: 'female' }))}
-                  className={`text-xs px-6 py-2.5 tracking-widest uppercase transition-colors font-medium border ${state.gender === 'female' ? 'bg-black text-white border-black' : 'text-gray-400 border-gray-100 hover:border-gray-300'
+                  className={`text-xs px-4 sm:px-6 py-2.5 flex-1 sm:flex-none tracking-widest uppercase transition-colors font-medium border ${state.gender === 'female' ? 'bg-black text-white border-black' : 'text-gray-400 border-gray-100 hover:border-gray-300'
                     }`}
                 >FEMALE</button>
                 <button
                   onClick={() => setState(s => ({ ...s, gender: 'male' }))}
-                  className={`text-xs px-6 py-2.5 tracking-widest uppercase transition-colors font-medium border-y border-r ${state.gender === 'male' ? 'bg-black text-white border-black' : 'text-gray-400 border-gray-100 hover:border-gray-300'
+                  className={`text-xs px-4 sm:px-6 py-2.5 flex-1 sm:flex-none tracking-widest uppercase transition-colors font-medium border-y border-r ${state.gender === 'male' ? 'bg-black text-white border-black' : 'text-gray-400 border-gray-100 hover:border-gray-300'
                     }`}
                 >MALE</button>
               </div>
             </div>
+
+            <div className="flex flex-col gap-3 w-full sm:w-auto">
+              <label className="text-[10px] tracking-wider uppercase font-bold text-gray-400">Aspect Ratio</label>
+              <div className="relative border-b border-gray-200 pb-2 w-full">
+                <select
+                  value={state.aspectRatio}
+                  onChange={(e) => setState(s => ({ ...s, aspectRatio: e.target.value as AspectRatio }))}
+                  className="appearance-none bg-transparent font-sans text-sm text-gray-600 w-full cursor-pointer focus:outline-none pr-6"
+                >
+                  <option value="9:16">9:16</option>
+                  <option value="16:9">16:9</option>
+                  <option value="1:1">1:1</option>
+                  <option value="3:4">3:4</option>
+                  <option value="4:3">4:3</option>
+                </select>
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
+                  <ChevronRight className="w-4 h-4 rotate-90" strokeWidth={1.5} />
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Row 2: Poses and Generate Button */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mt-2">
-            <div className="flex flex-col gap-3">
+          {/* Row 2: Poses, Custom Prompt, Generate Button */}
+          <div className="flex flex-col md:flex-row items-start md:items-end gap-6 md:gap-8 mt-4 md:mt-2 w-full">
+            <div className="flex flex-col gap-3 w-full md:w-auto shrink-0">
               <label className="text-[10px] tracking-wider uppercase font-bold text-gray-400">Poses (Max 3) - {availablePoses.length} Options</label>
               <div className="flex flex-wrap gap-2">
                 {availablePoses.map(pose => (
-                  <button
-                    key={pose.id}
-                    onClick={() => handlePoseToggle(pose.id)}
-                    className={`text-[10px] w-10 h-10 flex items-center justify-center border transition-colors ${state.selectedPoses.includes(pose.id) ? 'bg-black text-white border-black' : 'border-gray-100 text-gray-400 hover:border-gray-300'
-                      }`}
-                    title={pose.title}
-                  >
-                    {pose.id}
-                  </button>
+                  <div key={pose.id} className="relative group">
+                    <button
+                      onClick={() => handlePoseToggle(pose.id)}
+                      className={`text-[10px] w-10 h-10 flex items-center justify-center border transition-all duration-300 ${state.selectedPoses.includes(pose.id)
+                        ? 'bg-black text-white border-black shadow-[0_4px_10px_-4px_rgba(0,0,0,0.5)] scale-105'
+                        : 'bg-white border-gray-100 text-gray-500 hover:border-gray-800 hover:text-black hover:shadow-sm'
+                        }`}
+                    >
+                      {pose.id}
+                    </button>
+
+                    {/* Tooltip */}
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-[calc(100%+12px)] md:bottom-[calc(100%+12px)] w-[80vw] sm:w-56 max-w-[250px] bg-black text-white p-4 opacity-0 pointer-events-none group-hover:opacity-100 outline-none focus:outline-none transition-all duration-[400ms] translate-y-2 group-hover:translate-y-0 z-[100] shadow-2xl">
+                      <div className="text-[10px] font-bold tracking-widest uppercase mb-1.5 text-white/90 whitespace-normal text-left">
+                        {pose.title}
+                      </div>
+                      <div className="text-[11px] font-serif italic text-white/70 leading-relaxed whitespace-normal text-left">
+                        {pose.description}
+                      </div>
+                      {/* Triangle Pointer */}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-[1px] border-[5px] border-transparent border-t-black"></div>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            {/* Custom Prompt merged into Row 2 */}
+            <div className="flex flex-col gap-3 w-full md:flex-1 h-full min-w-0">
+              <label className="text-[10px] tracking-wider uppercase font-bold text-transparent select-none hidden md:block">PROMPT</label>
+              <div className="relative border-b border-gray-200 pb-2 h-10 flex items-center">
+                <input
+                  type="text"
+                  value={state.customPrompt}
+                  onChange={(e) => setState(s => ({ ...s, customPrompt: e.target.value }))}
+                  placeholder="补充提示词 (如: '赛博朋克风格')..."
+                  className="appearance-none bg-transparent font-sans text-sm text-gray-600 w-full focus:outline-none truncate"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto shrink-0 border-b border-transparent pb-0 md:pb-[3px]">
               {state.isGenerating && (
-                <div className="flex items-center gap-2 text-xs font-mono text-gray-400 animate-pulse">
+                <div className="flex items-center justify-center gap-2 text-xs font-mono text-gray-400 animate-pulse">
                   <span>GENERATING</span>
                   <span>{timerDisplay}</span>
                 </div>
@@ -271,37 +321,26 @@ const App: React.FC = () => {
               <button
                 disabled={state.isGenerating}
                 onClick={handleGenerate}
-                className="bg-black text-white px-12 py-3.5 font-sans text-xs tracking-[0.2em] hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+                className="bg-black text-white px-12 h-10 md:h-[42px] font-sans text-xs tracking-[0.2em] hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 w-full md:w-auto flex items-center justify-center"
               >
                 {state.isGenerating ? 'PROCESSING...' : 'GENERATE'}
               </button>
             </div>
           </div>
-
-          {/* Row 3: Custom Prompt */}
-          <div className="w-full mt-2">
-            <textarea
-              value={state.customPrompt}
-              onChange={(e) => setState(s => ({ ...s, customPrompt: e.target.value }))}
-              placeholder="需要补充的其他提示词 (例如: '红色背景', '赛博朋克风格')..."
-              className="w-full bg-transparent border border-gray-100 p-3 text-xs text-gray-700 focus:outline-none focus:border-gray-300 resize-none font-sans"
-              rows={2}
-            />
-          </div>
         </div>
 
         {state.error && (
-          <div className="mt-4 bg-red-50 border border-red-100 text-red-600 px-4 py-2 text-xs flex items-center gap-2">
-            <AlertTriangle size={12} /> {state.error}
+          <div className="mt-4 bg-red-50 border border-red-100 text-red-600 px-4 py-3 text-xs flex items-center gap-2 break-words">
+            <AlertTriangle size={16} className="shrink-0" /> <span className="flex-1">{state.error}</span>
           </div>
         )}
       </div>
 
-      <main className="max-w-7xl mx-auto px-6 md:px-12 py-12 grid grid-cols-1 lg:grid-cols-12 gap-12">
-        <section className="lg:col-span-5 space-y-12">
+      <main className="max-w-7xl mx-auto px-6 md:px-12 py-8 md:py-12 grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <section className="lg:col-span-5 space-y-12 order-2 lg:order-1 outline-none">
           <div>
             <h3 className="font-sans text-xs font-bold uppercase tracking-widest mb-6 border-b border-gray-100 pb-2 text-gray-900">Reference Specs</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <UploadSlot
                 label="Styling Ref"
                 required
@@ -331,7 +370,7 @@ const App: React.FC = () => {
 
           <div>
             <h3 className="font-sans text-xs font-bold uppercase tracking-widest mb-6 border-b border-gray-100 pb-2 text-gray-900">Accessories</h3>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {(Object.keys(state.inputs.accessories) as Array<keyof typeof state.inputs.accessories>).map((key) => (
                 <UploadSlot
                   key={key as string}
@@ -345,7 +384,7 @@ const App: React.FC = () => {
           </div>
         </section>
 
-        <section className="lg:col-span-7 relative flex flex-col items-center">
+        <section className="lg:col-span-7 relative flex flex-col items-center order-1 lg:order-2">
           {generatedImages.length > 0 ? (
             <div className="w-full max-w-[500px] flex flex-col gap-6">
               <div className="relative w-full aspect-[9/16] bg-gray-50 overflow-hidden group">
@@ -359,27 +398,27 @@ const App: React.FC = () => {
                   <>
                     <button
                       onClick={() => setCurrentPreviewIndex(i => i > 0 ? i - 1 : generatedImages.length - 1)}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 backdrop-blur-md text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 backdrop-blur-md text-white p-2 rounded-full opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <ChevronLeft size={24} />
+                      <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
                     </button>
                     <button
                       onClick={() => setCurrentPreviewIndex(i => i < generatedImages.length - 1 ? i + 1 : 0)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 backdrop-blur-md text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 backdrop-blur-md text-white p-2 rounded-full opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <ChevronRight size={24} />
+                      <ChevronRight size={20} className="sm:w-6 sm:h-6" />
                     </button>
                   </>
                 )}
               </div>
 
               {generatedImages.length > 1 && (
-                <div className="flex gap-2 justify-center">
+                <div className="flex gap-2 justify-center flex-wrap">
                   {generatedImages.map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentPreviewIndex(idx)}
-                      className={`w-12 h-16 border-2 transition-all ${currentPreviewIndex === idx ? 'border-black' : 'border-transparent opacity-50 hover:opacity-100'}`}
+                      className={`w-10 sm:w-12 h-14 sm:h-16 border-2 transition-all ${currentPreviewIndex === idx ? 'border-black' : 'border-transparent opacity-50 hover:opacity-100'}`}
                     >
                       <img src={img} className="w-full h-full object-cover" alt={`Thumbnail ${idx + 1}`} />
                     </button>
@@ -387,25 +426,25 @@ const App: React.FC = () => {
                 </div>
               )}
 
-              <div className="flex justify-between items-center w-full pt-4 border-t border-gray-100">
-                <div className="text-xs text-gray-400">
+              <div className="flex flex-col sm:flex-row justify-between items-center w-full pt-4 border-t border-gray-100 gap-3 sm:gap-0">
+                <div className="text-[10px] sm:text-xs text-gray-400 text-center sm:text-left">
                   Generated by {state.selectedModel}
                 </div>
                 <a
                   href={generatedImages[currentPreviewIndex]}
                   download={`vm-studio-${Date.now()}.png`}
-                  className="text-xs uppercase tracking-wider hover:underline"
+                  className="text-xs uppercase tracking-wider font-bold border-b border-black md:border-transparent hover:border-black transition-colors"
                 >
                   Download
                 </a>
               </div>
             </div>
           ) : (
-            <div className="w-full h-[600px] flex flex-col items-center justify-center border border-dashed border-gray-100 bg-[#fafafa] text-gray-300">
-              <div className="flex flex-col items-center gap-4 w-full max-w-sm px-8">
+            <div className="w-full aspect-[9/16] max-h-[600px] sm:h-[600px] flex flex-col items-center justify-center border border-dashed border-gray-100 bg-[#fafafa] text-gray-300">
+              <div className="flex flex-col items-center gap-4 w-full max-w-sm px-6 sm:px-8">
                 {state.isGenerating ? (
                   <div className="w-full flex flex-col items-center gap-3">
-                    <p className="font-sans text-xs tracking-widest uppercase text-gray-900 font-bold mb-1">
+                    <p className="font-sans text-[10px] sm:text-xs tracking-widest uppercase text-gray-900 font-bold mb-1 text-center">
                       Generating High-Res Image
                     </p>
                     <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
@@ -422,7 +461,7 @@ const App: React.FC = () => {
                 ) : (
                   <>
                     <Zap size={36} strokeWidth={1} className="text-[#e0e0e0]" />
-                    <p className="font-serif italic text-[#c0c0c0]">Preview will appear here</p>
+                    <p className="font-serif italic text-[#c0c0c0] text-center text-sm md:text-base">Preview will appear here</p>
                   </>
                 )}
               </div>
