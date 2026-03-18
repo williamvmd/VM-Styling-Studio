@@ -10,7 +10,7 @@ const INITIAL_STATE: AppState = {
   gender: 'female',
   backgroundMode: 'white',
   selectedPoses: ['F1'],
-  selectedModel: 'gemini-3.1-flash-image-preview',
+  selectedModel: 'gemini-3-pro-image-preview',
   aspectRatio: '9:16',
   inputs: {
     stylingRef: null,
@@ -96,7 +96,7 @@ const App: React.FC = () => {
     const finalApiKey = state.apiKey.trim();
 
     if (!finalApiKey) {
-      setState(s => ({ ...s, error: 'API Key missing. Please paste your Google AI API Key in the settings above.' }));
+      setState(s => ({ ...s, error: 'API Key / Relay Token missing. Please paste it in the settings above.' }));
       return;
     }
 
@@ -147,8 +147,13 @@ const App: React.FC = () => {
 
     } catch (err: any) {
       let errorMessage = err.message || 'Generation failed';
-      if (errorMessage.includes('403') || errorMessage.includes('PERMISSION_DENIED') || errorMessage.includes('API_KEY_INVALID')) {
-        errorMessage = 'API Key 无效或权限不足，已清除保存的 Key。请重新输入正确的 Key。';
+      if (
+        errorMessage.includes('401') ||
+        errorMessage.includes('403') ||
+        errorMessage.includes('PERMISSION_DENIED') ||
+        errorMessage.includes('API_KEY_INVALID')
+      ) {
+        errorMessage = 'API Key 或 Relay Token 无效，已清除保存的凭证。请重新输入正确的值。';
         localStorage.removeItem('GEMINI_API_KEY');
         setState(s => ({ ...s, apiKey: '' }));
       }
@@ -185,8 +190,8 @@ const App: React.FC = () => {
                   onChange={(e) => setState(s => ({ ...s, selectedModel: e.target.value as ModelTier }))}
                   className="appearance-none bg-transparent font-sans text-sm text-gray-600 w-full cursor-pointer focus:outline-none"
                 >
+                  <option value="gemini-3.1-flash-image-preview">Nano Banana 2</option>
                   <option value="gemini-3-pro-image-preview">Nano Banana Pro</option>
-                  <option value="gemini-3.1-flash-image-preview">Nano banana2</option>
                 </select>
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
                   <ChevronRight className="w-4 h-4 rotate-90" strokeWidth={1.5} />
@@ -195,7 +200,7 @@ const App: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[200px] md:flex-1">
-              <label className="text-[10px] tracking-wider uppercase font-bold text-gray-400">Google API Key</label>
+              <label className="text-[10px] tracking-wider uppercase font-bold text-gray-400">API Key / Relay Token</label>
               <div className="relative border-b border-gray-200 pb-2">
                 <input
                   type="password"
@@ -204,7 +209,7 @@ const App: React.FC = () => {
                     setState(s => ({ ...s, apiKey: e.target.value }));
                     localStorage.setItem('GEMINI_API_KEY', e.target.value);
                   }}
-                  placeholder="Paste AI Key here..."
+                  placeholder="Paste API key or relay token here..."
                   className="appearance-none bg-transparent font-sans text-sm text-gray-600 w-full focus:outline-none"
                 />
               </div>
