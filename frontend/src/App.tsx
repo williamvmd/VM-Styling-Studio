@@ -10,7 +10,7 @@ const INITIAL_STATE: AppState = {
   gender: 'female',
   backgroundMode: 'white',
   selectedPoses: ['F1'],
-  selectedModel: 'gemini-3-pro-image-preview',
+  selectedModel: 'gemini-3.1-flash-image-preview',
   aspectRatio: '9:16',
   inputs: {
     stylingRef: null,

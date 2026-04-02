@@ -104,6 +104,48 @@ npm run deploy:github-pages
 
 这样发布后的 GitHub Pages 页面会继续保留你熟悉的 `github.io` 访问方式，但 API 请求会走你自己的 CloudBase HTTPS 代理。
 
+## GitHub Pages + 吾爱 API（当前推荐）
+
+如果你已经在 `https://wuaiapi.com/console/token` 创建了 token，并且模型广场确认可用模型为：
+
+- `gemini-3.1-flash-image-preview`
+
+那么现在可以直接走这个更简单的方案：
+
+1. 页面继续部署到 GitHub Pages
+2. 不需要 CloudBase 或额外代理
+3. 构建时默认直接请求 `https://wuaiapi.com`
+4. 页面里手动粘贴你在吾爱 API 后台创建的 token
+
+仓库里已经内置：
+
+- `frontend/.env.github-pages`
+
+内容就是：
+
+```bash
+VITE_RELAY_PROXY_BASE_URL=https://wuaiapi.com
+```
+
+因此你现在直接运行：
+
+```bash
+npm run deploy:github-pages
+```
+
+即可发布一版默认对接 `wuaiapi` 的 GitHub Pages 页面。
+
+说明：
+
+- 当前默认模型已切到 `gemini-3.1-flash-image-preview`
+- 这个端点支持 Gemini 原生格式：
+
+```text
+/v1beta/models/gemini-3.1-flash-image-preview:generateContent
+```
+
+- 我已额外验证过该端点支持浏览器跨域预检（`OPTIONS` 返回 `access-control-allow-origin: *`）
+
 ## 国内免备案测试方案（CloudBase）
 
 如果你主要在中国大陆本地使用，又想避免 `vercel.app` 的可访问性风险，可以走：
