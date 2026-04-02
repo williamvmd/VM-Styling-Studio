@@ -78,6 +78,18 @@ npm run dev
 2. 不需要额外后端服务，`vercel.json` 已提供 API 转发。
 3. 打开页面后，在界面里手动输入你的 Relay API Key。
 
+## 国内免备案测试方案（CloudBase）
+
+如果你主要在中国大陆本地使用，又想避免 `vercel.app` 的可访问性风险，可以走：
+
+1. CloudBase 静态网站托管部署 `dist`
+2. CloudBase 云函数部署仓库里的 `cloudbase/functions/vmStudioRelayProxy`
+3. 用 CloudBase `HTTP 访问服务` 把 `/` 路由到静态网站，把 `/api/gemini` 路由到云函数
+
+完整步骤见：
+
+`/Users/william/Desktop/will-project/VM Studio/CLOUDBASE_DEPLOY.md`
+
 如果你之后有自己的 HTTPS 代理地址，也可以通过环境变量覆盖：
 
 ```bash
