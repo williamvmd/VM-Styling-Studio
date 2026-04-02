@@ -24,7 +24,7 @@ const INITIAL_STATE: AppState = {
   currentSessionId: null,
   error: null,
   customPrompt: '',
-  apiKey: localStorage.getItem('GEMINI_API_KEY') || '',
+  apiKey: '',
 };
 
 const App: React.FC = () => {
@@ -96,12 +96,9 @@ const App: React.FC = () => {
     const finalApiKey = state.apiKey.trim();
 
     if (!finalApiKey) {
-      setState(s => ({ ...s, error: 'API Key / Relay Token missing. Please paste it in the settings above.' }));
+      setState(s => ({ ...s, error: 'Relay API Key missing. Please paste it in the settings above.' }));
       return;
     }
-
-    // Save to local storage for future sessions
-    localStorage.setItem('GEMINI_API_KEY', finalApiKey);
 
     if (!state.inputs.stylingRef || !state.inputs.faceRef) {
       setState(s => ({ ...s, error: 'Please upload Styling Reference and Face Reference.' }));
@@ -153,9 +150,7 @@ const App: React.FC = () => {
         errorMessage.includes('PERMISSION_DENIED') ||
         errorMessage.includes('API_KEY_INVALID')
       ) {
-        errorMessage = 'API Key 或 Relay Token 无效，已清除保存的凭证。请重新输入正确的值。';
-        localStorage.removeItem('GEMINI_API_KEY');
-        setState(s => ({ ...s, apiKey: '' }));
+        errorMessage = 'API Key 或 Relay Token 无效，请确认后重试。';
       }
       setState(s => ({ ...s, isGenerating: false, error: errorMessage }));
     } finally {
@@ -200,16 +195,13 @@ const App: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[200px] md:flex-1">
-              <label className="text-[10px] tracking-wider uppercase font-bold text-gray-400">API Key / Relay Token</label>
+              <label className="text-[10px] tracking-wider uppercase font-bold text-gray-400">Relay API Key</label>
               <div className="relative border-b border-gray-200 pb-2">
                 <input
                   type="password"
                   value={state.apiKey}
-                  onChange={(e) => {
-                    setState(s => ({ ...s, apiKey: e.target.value }));
-                    localStorage.setItem('GEMINI_API_KEY', e.target.value);
-                  }}
-                  placeholder="Paste API key or relay token here..."
+                  onChange={(e) => setState(s => ({ ...s, apiKey: e.target.value }))}
+                  placeholder="Paste your relay API key here..."
                   className="appearance-none bg-transparent font-sans text-sm text-gray-600 w-full focus:outline-none"
                 />
               </div>

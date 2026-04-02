@@ -4,19 +4,18 @@ import { CORE_PROMPT_TEMPLATE, NEGATIVE_PROMPT } from "../constants";
 
 // Helper to strip the prefix for API usage
 const cleanBase64 = (b64: string) => b64.split(',')[1] || b64;
+const RELAY_PROXY_BASE_URL = (
+  import.meta.env.VITE_RELAY_PROXY_BASE_URL || "/api/gemini"
+).replace(/\/$/, "");
 
 export const generateFashionImage = async (
   state: AppState,
   pose: Pose,
   apiKey: string
 ): Promise<string> => {
-  // For GitHub Pages deployment, we must call the Google API directly via HTTPS
-  const customBaseUrl = "https://ssl.52youxi.cc";
-
-  // The SDK would usually call /v1beta/models/{model}:generateContent
-  // Depending on how your proxy is setup, either /api represents the root or you need the full path.
-  // Assuming the proxy is a direct passthrough of Google's API path:
-  const url = `${customBaseUrl}/v1beta/models/${state.selectedModel}:generateContent?key=${apiKey}`;
+  const baseUrl = RELAY_PROXY_BASE_URL;
+  const requestModel = state.selectedModel;
+  const url = `${baseUrl}/v1beta/models/${requestModel}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
   // Interpolate Prompt
   const prompt = CORE_PROMPT_TEMPLATE
@@ -65,10 +64,13 @@ export const generateFashionImage = async (
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Relay-Key": apiKey,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         contents: [{ role: "user", parts }],
         generationConfig: {
+          responseModalities: ["IMAGE"],
           temperature: 1.0,
           aspectRatio: state.aspectRatio,
         },

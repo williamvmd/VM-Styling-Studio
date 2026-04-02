@@ -55,13 +55,34 @@ frontend/
 └── tsconfig.json
 ```
 
-## API Key 配置
+## Relay API Key 配置（已改为更安全默认）
 
-应用使用 `window.aistudio` API 来选择 Google AI API Key：
+应用现在默认走同域 `/api/gemini` 代理，你手动输入 Relay API Key 即可使用。
 
-1. 在 Google AI Studio 中打开应用
-2. 首次生成时会提示选择 API Key
-3. 或者在代码中设置 `window.API_KEY`
+- 前端不再把 key 持久化到 `localStorage`
+- 浏览器不会直接请求 `http://...` 接口（避免 HTTPS 页面 Mixed Content 问题）
+- 推荐部署在 Vercel（`vercel.json` 已配置将 `/api/gemini/*` 转发到 `http://zx2.52youxi.cc:3000/*`）
+
+## 本地开发
+
+```bash
+npm install
+npm run dev
+```
+
+开发模式下，Vite 会把 `/api/gemini/*` 代理到 `http://zx2.52youxi.cc:3000/*`。
+
+## 线上部署（最省事方案）
+
+1. 将 `frontend` 目录部署到 Vercel（Framework 选 `Vite`）。
+2. 不需要额外后端服务，`vercel.json` 已提供 API 转发。
+3. 打开页面后，在界面里手动输入你的 Relay API Key。
+
+如果你之后有自己的 HTTPS 代理地址，也可以通过环境变量覆盖：
+
+```bash
+VITE_RELAY_PROXY_BASE_URL=https://your-https-proxy.example.com/api/gemini
+```
 
 ## 开发说明
 
