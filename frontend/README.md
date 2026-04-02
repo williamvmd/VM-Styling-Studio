@@ -78,6 +78,32 @@ npm run dev
 2. 不需要额外后端服务，`vercel.json` 已提供 API 转发。
 3. 打开页面后，在界面里手动输入你的 Relay API Key。
 
+## GitHub Pages + CloudBase 代理（最像你现在站点的方案）
+
+如果你已经确认 `github.io` 在你的使用环境里能正常打开，这是最接近你当前线上站点的方案：
+
+1. 页面继续部署到 GitHub Pages
+2. CloudBase 只负责提供一个 HTTPS 代理地址
+3. 前端构建时把 `VITE_RELAY_PROXY_BASE_URL` 指向你的 CloudBase `/api/gemini`
+
+准备方法：
+
+1. 参考 `frontend/.env.github-pages.example`
+2. 在同目录新建一个本地文件：`frontend/.env.github-pages.local`
+3. 填入你自己的 CloudBase 地址，例如：
+
+```bash
+VITE_RELAY_PROXY_BASE_URL=https://your-cloudbase-domain/api/gemini
+```
+
+4. 然后执行：
+
+```bash
+npm run deploy:github-pages
+```
+
+这样发布后的 GitHub Pages 页面会继续保留你熟悉的 `github.io` 访问方式，但 API 请求会走你自己的 CloudBase HTTPS 代理。
+
 ## 国内免备案测试方案（CloudBase）
 
 如果你主要在中国大陆本地使用，又想避免 `vercel.app` 的可访问性风险，可以走：

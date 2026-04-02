@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:github-pages": "tsc && vite build --mode github-pages",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "deploy:github-pages": "npm run build:github-pages && gh-pages -d dist"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
