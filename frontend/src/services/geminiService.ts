@@ -8,6 +8,34 @@ const RELAY_PROXY_BASE_URL = (
   import.meta.env.VITE_RELAY_PROXY_BASE_URL || "https://wuaiapi.com"
 ).replace(/\/$/, "");
 
+// NOTE: 图片压缩 — 当 base64 超过 3MB 时自动压缩，防止请求体过大导致 "Failed to fetch"
+const compressBase64Image = (b64: string, maxBytes = 3 * 1024 * 1024): Promise<string> => {
+  return new Promise((resolve) => {
+    const raw = cleanBase64(b64);
+    // 已经足够小，无需压缩
+    if (raw.length * 0.75 <= maxBytes) {
+      resolve(raw);
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      // 按比例缩小，目标长边 1600px
+      const MAX_SIDE = 1600;
+      const scale = Math.min(MAX_SIDE / img.width, MAX_SIDE / img.height, 1);
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // 以 JPEG 0.85 质量压缩
+      const compressed = canvas.toDataURL('image/jpeg', 0.85);
+      resolve(cleanBase64(compressed));
+    };
+    img.onerror = () => resolve(raw); // 压缩失败则原样发送
+    img.src = b64.startsWith('data:') ? b64 : `data:image/png;base64,${raw}`;
+  });
+};
+
 const extractImageFromResult = (result: any): string | null => {
   for (const candidate of result.candidates || []) {
     if (candidate.content && candidate.content.parts) {
@@ -58,41 +86,50 @@ export const generateFashionImage = async (
     finalPrompt += `\n\nUSER ADDITIONAL STYLING REQUEST:\n${state.customPrompt.trim()}`;
   }
 
-  // Collect Parts
+  // Collect Parts（先异步压缩所有图片，再组装请求体，避免 Failed to fetch）
   const parts: any[] = [{ text: finalPrompt }];
 
-  // Helper to add image parts with labels
-  const addPart = (label: string, img: { base64: string, mimeType: string } | null) => {
+  // Helper to add image parts with labels（自动压缩大图）
+  const addPart = async (label: string, img: { base64: string, mimeType: string } | null) => {
     if (img) {
       parts.push({ text: `\n[Reference Image: ${label}]` });
+      const compressedData = await compressBase64Image(img.base64);
+      // NOTE: 压缩后统一用 jpeg mimeType（除非原图很小未被压缩）
+      const finalMime = compressedData === cleanBase64(img.base64) ? img.mimeType : 'image/jpeg';
       parts.push({
         inlineData: {
-          mimeType: img.mimeType,
-          data: cleanBase64(img.base64),
+          mimeType: finalMime,
+          data: compressedData,
         },
       });
     }
   };
 
-  // Add Images in order
-  addPart('Styling Reference', state.inputs.stylingRef);
-  addPart('Face Reference', state.inputs.faceRef);
-  addPart('Garment Top', state.inputs.clothes.top);
-  addPart('Garment Bottom', state.inputs.clothes.bottom);
-  addPart('Shoes', state.inputs.clothes.shoes);
-  addPart('Sunglasses', state.inputs.clothes.sunglasses);
-  addPart('Necklace', state.inputs.accessories.necklace);
-  addPart('Earrings', state.inputs.accessories.earrings);
-  addPart('Jewelry', state.inputs.accessories.jewelry);
-  addPart('Hat/Scarf', state.inputs.accessories.hat);
-  addPart('Bag', state.inputs.accessories.bag);
-  addPart('Belt', state.inputs.accessories.belt);
+  // Add Images in order（串行等待所有压缩完成）
+  await addPart('Styling Reference', state.inputs.stylingRef);
+  await addPart('Face Reference', state.inputs.faceRef);
+  await addPart('Garment Top', state.inputs.clothes.top);
+  await addPart('Garment Bottom', state.inputs.clothes.bottom);
+  await addPart('Shoes', state.inputs.clothes.shoes);
+  await addPart('Sunglasses', state.inputs.clothes.sunglasses);
+  await addPart('Necklace', state.inputs.accessories.necklace);
+  await addPart('Earrings', state.inputs.accessories.earrings);
+  await addPart('Jewelry', state.inputs.accessories.jewelry);
+  await addPart('Hat/Scarf', state.inputs.accessories.hat);
+  await addPart('Bag', state.inputs.accessories.bag);
+  await addPart('Belt', state.inputs.accessories.belt);
 
   try {
     for (const requestModel of modelCandidates) {
       const url = `${baseUrl}/v1beta/models/${requestModel}:generateContent`;
+
+      // NOTE: 60 秒超时，防止大图请求无限挂起后被浏览器强制断开（表现为 "Failed to fetch"）
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60_000);
+
       const fetchResponse = await fetch(url, {
         method: "POST",
+        signal: controller.signal,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${apiKey}`,
@@ -100,12 +137,15 @@ export const generateFashionImage = async (
         body: JSON.stringify({
           contents: [{ role: "user", parts }],
           generationConfig: {
-            responseModalities: ["IMAGE"],
+            // NOTE: 必须同时包含 "Text" 和 "Image"，只传 "IMAGE" 在部分渠道会触发 Failed to fetch
+            responseModalities: ["Text", "Image"],
             temperature: 1.0,
             aspectRatio: state.aspectRatio,
           },
         }),
       });
+
+      clearTimeout(timeoutId);
 
       if (!fetchResponse.ok) {
         const errData = await fetchResponse.json().catch(() => null);
