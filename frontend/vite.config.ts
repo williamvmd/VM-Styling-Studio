@@ -10,9 +10,9 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api/gemini': {
-        target: 'http://zx2.52youxi.cc:3000',
+        target: 'https://wuaiapi.com',
         changeOrigin: true,
-        secure: false,
+        secure: true,
         rewrite: (path) => path.replace(/^\/api\/gemini/, '')
       }
     }

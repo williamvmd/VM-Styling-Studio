@@ -144,6 +144,15 @@ const App: React.FC = () => {
 
     } catch (err: any) {
       let errorMessage = err.message || 'Generation failed';
+      if (errorMessage.includes('"message":"')) {
+        const match = errorMessage.match(/"message":"([^"]+)"/);
+        if (match?.[1]) {
+          errorMessage = match[1].replace(
+            /\\u([\dA-Fa-f]{4})/g,
+            (_match: string, code: string) => String.fromCharCode(parseInt(code, 16))
+          );
+        }
+      }
       if (
         errorMessage.includes('401') ||
         errorMessage.includes('403') ||

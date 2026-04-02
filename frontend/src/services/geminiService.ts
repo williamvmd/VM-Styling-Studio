@@ -5,7 +5,7 @@ import { CORE_PROMPT_TEMPLATE, NEGATIVE_PROMPT } from "../constants";
 // Helper to strip the prefix for API usage
 const cleanBase64 = (b64: string) => b64.split(',')[1] || b64;
 const RELAY_PROXY_BASE_URL = (
-  import.meta.env.VITE_RELAY_PROXY_BASE_URL || "/api/gemini"
+  import.meta.env.VITE_RELAY_PROXY_BASE_URL || "https://wuaiapi.com"
 ).replace(/\/$/, "");
 
 export const generateFashionImage = async (
@@ -15,7 +15,7 @@ export const generateFashionImage = async (
 ): Promise<string> => {
   const baseUrl = RELAY_PROXY_BASE_URL;
   const requestModel = state.selectedModel;
-  const url = `${baseUrl}/v1beta/models/${requestModel}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const url = `${baseUrl}/v1beta/models/${requestModel}:generateContent`;
 
   // Interpolate Prompt
   const prompt = CORE_PROMPT_TEMPLATE
@@ -64,7 +64,6 @@ export const generateFashionImage = async (
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Relay-Key": apiKey,
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({

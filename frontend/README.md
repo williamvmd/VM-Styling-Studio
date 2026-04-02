@@ -57,11 +57,11 @@ frontend/
 
 ## Relay API Key 配置（已改为更安全默认）
 
-应用现在默认走同域 `/api/gemini` 代理，你手动输入 Relay API Key 即可使用。
+应用现在默认直接请求 HTTPS 中转，你手动输入 Relay API Key 即可使用。
 
 - 前端不再把 key 持久化到 `localStorage`
-- 浏览器不会直接请求 `http://...` 接口（避免 HTTPS 页面 Mixed Content 问题）
-- 推荐部署在 Vercel（`vercel.json` 已配置将 `/api/gemini/*` 转发到 `http://zx2.52youxi.cc:3000/*`）
+- 当前默认对接 `https://wuaiapi.com`
+- 对 `New API / 吾爱 API` 的 Gemini 兼容接口使用 `Authorization: Bearer sk-...`
 
 ## 本地开发
 
@@ -71,6 +71,7 @@ npm run dev
 ```
 
 开发模式下，Vite 会把 `/api/gemini/*` 代理到 `http://zx2.52youxi.cc:3000/*`。
+如果你不设置环境变量，当前代码也会直接请求 `https://wuaiapi.com`。
 
 ## 线上部署（最省事方案）
 
@@ -145,6 +146,8 @@ npm run deploy:github-pages
 ```
 
 - 我已额外验证过该端点支持浏览器跨域预检（`OPTIONS` 返回 `access-control-allow-origin: *`）
+- 对这套接口，当前代码使用 `Authorization: Bearer sk-...`
+  不再把 token 拼进 `?key=`，避免 `New API` 将其识别成别的 key 形式
 
 ## 国内免备案测试方案（CloudBase）
 
