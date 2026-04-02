@@ -8,14 +8,43 @@ const RELAY_PROXY_BASE_URL = (
   import.meta.env.VITE_RELAY_PROXY_BASE_URL || "https://wuaiapi.com"
 ).replace(/\/$/, "");
 
+const extractImageFromResult = (result: any): string | null => {
+  for (const candidate of result.candidates || []) {
+    if (candidate.content && candidate.content.parts) {
+      for (const part of candidate.content.parts) {
+        if (part.inlineData && part.inlineData.data) {
+          return `data:image/png;base64,${part.inlineData.data}`;
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
+const shouldFallbackToPro = (model: string, status: number, errData: any): boolean => {
+  if (model !== "gemini-3.1-flash-image-preview" || status !== 503) {
+    return false;
+  }
+
+  const errorText = JSON.stringify(errData || {});
+  return (
+    errorText.includes('"code":"model_not_found"') ||
+    errorText.includes("无可用渠道") ||
+    errorText.includes("No available channel")
+  );
+};
+
 export const generateFashionImage = async (
   state: AppState,
   pose: Pose,
   apiKey: string
 ): Promise<string> => {
   const baseUrl = RELAY_PROXY_BASE_URL;
-  const requestModel = state.selectedModel;
-  const url = `${baseUrl}/v1beta/models/${requestModel}:generateContent`;
+  const modelCandidates =
+    state.selectedModel === "gemini-3.1-flash-image-preview"
+      ? ["gemini-3.1-flash-image-preview", "gemini-3-pro-image-preview"]
+      : [state.selectedModel];
 
   // Interpolate Prompt
   const prompt = CORE_PROMPT_TEMPLATE
@@ -60,41 +89,43 @@ export const generateFashionImage = async (
   addPart('Belt', state.inputs.accessories.belt);
 
   try {
-    const fetchResponse = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts }],
-        generationConfig: {
-          responseModalities: ["IMAGE"],
-          temperature: 1.0,
-          aspectRatio: state.aspectRatio,
+    for (const requestModel of modelCandidates) {
+      const url = `${baseUrl}/v1beta/models/${requestModel}:generateContent`;
+      const fetchResponse = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
         },
-      }),
-    });
+        body: JSON.stringify({
+          contents: [{ role: "user", parts }],
+          generationConfig: {
+            responseModalities: ["IMAGE"],
+            temperature: 1.0,
+            aspectRatio: state.aspectRatio,
+          },
+        }),
+      });
 
-    if (!fetchResponse.ok) {
-      const errData = await fetchResponse.json().catch(() => null);
-      throw new Error(`API Error ${fetchResponse.status}: ${JSON.stringify(errData)}`);
-    }
-
-    const result = await fetchResponse.json();
-
-    // Handle Response - extract image
-    for (const candidate of result.candidates || []) {
-      if (candidate.content && candidate.content.parts) {
-        for (const part of candidate.content.parts) {
-          if (part.inlineData && part.inlineData.data) {
-            return `data:image/png;base64,${part.inlineData.data}`;
-          }
+      if (!fetchResponse.ok) {
+        const errData = await fetchResponse.json().catch(() => null);
+        if (shouldFallbackToPro(requestModel, fetchResponse.status, errData)) {
+          continue;
         }
+
+        throw new Error(`API Error ${fetchResponse.status}: ${JSON.stringify(errData)}`);
       }
+
+      const result = await fetchResponse.json();
+      const imageData = extractImageFromResult(result);
+      if (imageData) {
+        return imageData;
+      }
+
+      throw new Error("No image data found in response.");
     }
 
-    throw new Error("No image data found in response.");
+    throw new Error("API Error 503: Flash image channel unavailable and fallback also failed.");
   } catch (error) {
     console.error("Gemini API Error:", error);
     throw error;
