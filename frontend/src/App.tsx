@@ -6,6 +6,8 @@ import { AppState, ModelTier, UploadedImage, Session, Pose, AspectRatio } from '
 import { FEMALE_POSES, MALE_POSES } from './constants';
 import { generateFashionImage } from './services/geminiService';
 
+const SUPPORTED_WUAI_MODEL: ModelTier = 'gemini-3.1-flash-image-preview';
+
 const INITIAL_STATE: AppState = {
   gender: 'female',
   backgroundMode: 'white',
@@ -47,6 +49,12 @@ const App: React.FC = () => {
     }
   }, [state.gender, availablePoses, state.selectedPoses]);
 
+  useEffect(() => {
+    if (state.selectedModel !== SUPPORTED_WUAI_MODEL) {
+      setState(s => ({ ...s, selectedModel: SUPPORTED_WUAI_MODEL }));
+    }
+  }, [state.selectedModel]);
+
   const updateInput = (
     category: 'clothes' | 'accessories' | 'root',
     key: string,
@@ -81,22 +89,18 @@ const App: React.FC = () => {
     setState(s => ({ ...s, error: null }));
 
     // API Key handling
-    if (state.selectedModel === 'gemini-3-pro-image-preview' && (window as any).aistudio) {
-      try {
-        const hasKey = await (window as any).aistudio.hasSelectedApiKey();
-        if (!hasKey) {
-          await (window as any).aistudio.openSelectKey();
-        }
-      } catch (err) {
-        console.warn("API Key selection dialog error", err);
-      }
-    }
-
-    // API Key handling
     const finalApiKey = state.apiKey.trim();
 
     if (!finalApiKey) {
       setState(s => ({ ...s, error: 'Relay API Key missing. Please paste it in the settings above.' }));
+      return;
+    }
+
+    if (state.selectedModel !== SUPPORTED_WUAI_MODEL) {
+      setState(s => ({
+        ...s,
+        error: '当前吾爱 API 只开通了 Nano Banana 2（gemini-3.1-flash-image-preview）。'
+      }));
       return;
     }
 
@@ -195,12 +199,12 @@ const App: React.FC = () => {
                   className="appearance-none bg-transparent font-sans text-sm text-gray-600 w-full cursor-pointer focus:outline-none"
                 >
                   <option value="gemini-3.1-flash-image-preview">Nano Banana 2</option>
-                  <option value="gemini-3-pro-image-preview">Nano Banana Pro</option>
                 </select>
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
                   <ChevronRight className="w-4 h-4 rotate-90" strokeWidth={1.5} />
                 </div>
               </div>
+              <p className="text-[11px] text-gray-400">Current relay only supports Nano Banana 2.</p>
             </div>
 
             <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[200px] md:flex-1">
