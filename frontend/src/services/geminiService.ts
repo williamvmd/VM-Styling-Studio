@@ -16,15 +16,17 @@ const compressBase64Image = (b64: string): Promise<string> => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      // NOTE: 长边限制 1024px（原为 1600px），AI 识别参考图无需过高分辨率
-      const MAX_SIDE = 1024;
+      // NOTE: 长边限制 512px（原为 1024px）
+      // 记忆：AI 识别参考图时并不需要高分辨率，512px 足够识别服装款式/颜色/质地
+      // 而且体积将从 ~1MB 降至 ~80-150KB/张，12张图总体积远小于 2MB
+      const MAX_SIDE = 512;
       const scale = Math.min(MAX_SIDE / img.width, MAX_SIDE / img.height, 1);
       canvas.width = Math.round(img.width * scale);
       canvas.height = Math.round(img.height * scale);
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      // NOTE: JPEG 0.80 质量（原为 0.85），肉眼几乎无差距，体积缩减 20%
-      const compressed = canvas.toDataURL('image/jpeg', 0.80);
+      // NOTE: JPEG 0.75 质量（原为 0.80），进一步减小体积，肉眼对参考图几乎无感知
+      const compressed = canvas.toDataURL('image/jpeg', 0.75);
       resolve(cleanBase64(compressed));
     };
     img.onerror = () => resolve(raw); // 压缩失败则原样发送
@@ -119,6 +121,14 @@ export const generateFashionImage = async (
         data: slot.compressedData,
       },
     });
+  }
+
+  // NOTE: 预估请求体大小，超过 4MB 则警告（过大容易导致 Failed to fetch）
+  const estimatedPayloadBytes = JSON.stringify(parts).length;
+  const estimatedMB = (estimatedPayloadBytes / 1024 / 1024).toFixed(2);
+  console.log(`[VM Studio] 请求体体积预估: ${estimatedMB} MB，共 ${parts.filter(p => p.inlineData).length} 张图片`);
+  if (estimatedPayloadBytes > 4 * 1024 * 1024) {
+    console.warn(`[VM Studio] 警告：请求体超过 4MB (${estimatedMB}MB)，可能导致 Failed to fetch！`);
   }
 
   try {
