@@ -49,7 +49,7 @@ const extractImageFromResult = (result: any): string | null => {
 };
 
 const shouldFallbackToPro = (model: string, status: number, errData: any): boolean => {
-  if (model !== "gemini-3.1-flash-image-preview" || status !== 503) {
+  if (model !== "gemini-3-flash-preview" || status !== 503) {
     return false;
   }
 
@@ -68,8 +68,8 @@ export const generateFashionImage = async (
 ): Promise<string> => {
   const baseUrl = RELAY_PROXY_BASE_URL;
   const modelCandidates =
-    state.selectedModel === "gemini-3.1-flash-image-preview"
-      ? ["gemini-3.1-flash-image-preview", "gemini-3-pro-image-preview"]
+    state.selectedModel === "gemini-3-flash-preview"
+      ? ["gemini-3-flash-preview", "gemini-3-pro-image-preview"]
       : [state.selectedModel];
 
   // Interpolate Prompt

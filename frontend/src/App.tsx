@@ -186,7 +186,7 @@ const App: React.FC = () => {
                   className="appearance-none bg-transparent font-sans text-sm text-gray-600 w-full cursor-pointer focus:outline-none"
                 >
                   <option value="gemini-3-pro-image-preview">Nano Banana Pro</option>
-                  <option value="gemini-3.1-flash-image-preview">Nano Banana 2</option>
+                  <option value="gemini-3-flash-preview">Nano Banana 2</option>
                 </select>
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
                   <ChevronRight className="w-4 h-4 rotate-90" strokeWidth={1.5} />
