@@ -26,7 +26,8 @@ const INITIAL_STATE: AppState = {
   currentSessionId: null,
   error: null,
   customPrompt: '',
-  apiKey: '',
+  // NOTE: 初始化时从 localStorage 读取上次保存的 API Key，避免每次刷新页面都要重新输入
+  apiKey: localStorage.getItem('vm_studio_api_key') ?? '',
 };
 
 const App: React.FC = () => {
@@ -200,7 +201,12 @@ const App: React.FC = () => {
                 <input
                   type="password"
                   value={state.apiKey}
-                  onChange={(e) => setState(s => ({ ...s, apiKey: e.target.value }))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    // NOTE: 将 API Key 同时写入 localStorage，刷新页面后自动恢复
+                    localStorage.setItem('vm_studio_api_key', val);
+                    setState(s => ({ ...s, apiKey: val }));
+                  }}
                   placeholder="Paste your relay API key here..."
                   className="appearance-none bg-transparent font-sans text-sm text-gray-600 w-full focus:outline-none"
                 />
