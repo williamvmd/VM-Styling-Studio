@@ -123,9 +123,9 @@ export const generateFashionImage = async (
     for (const requestModel of modelCandidates) {
       const url = `${baseUrl}/v1beta/models/${requestModel}:generateContent`;
 
-      // NOTE: 60 秒超时，防止大图请求无限挂起后被浏览器强制断开（表现为 "Failed to fetch"）
+      // NOTE: 180 秒超时（3分钟），多图场景下 AI 处理时间较长，60秒容易触发 "signal is aborted without reason"
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60_000);
+      const timeoutId = setTimeout(() => controller.abort(), 180_000);
 
       const fetchResponse = await fetch(url, {
         method: "POST",
