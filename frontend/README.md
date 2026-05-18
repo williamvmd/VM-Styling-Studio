@@ -59,7 +59,7 @@ frontend/
 
 应用现在默认直接请求 HTTPS 中转，你手动输入 Relay API Key 即可使用。
 
-- 前端不再把 key 持久化到 `localStorage`
+- 前端会将 key 持久化到 `localStorage`，刷新页面后自动恢复
 - 当前默认对接 `https://wuaiapi.com`
 - 对 `New API / 吾爱 API` 的 Gemini 兼容接口使用 `Authorization: Bearer sk-...`
 

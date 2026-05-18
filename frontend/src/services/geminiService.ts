@@ -38,8 +38,16 @@ const extractImageFromResult = (result: any): string | null => {
   for (const candidate of result.candidates || []) {
     if (candidate.content && candidate.content.parts) {
       for (const part of candidate.content.parts) {
+        // 标准 Gemini 格式：base64 inlineData
         if (part.inlineData && part.inlineData.data) {
           return `data:image/png;base64,${part.inlineData.data}`;
+        }
+        // gpt-image-2 格式：markdown 图片 URL
+        if (part.text) {
+          const urlMatch = part.text.match(/!\[image\]\((https?:\/\/[^\s)]+)\)/);
+          if (urlMatch?.[1]) {
+            return urlMatch[1];
+          }
         }
       }
     }
@@ -67,10 +75,7 @@ export const generateFashionImage = async (
   apiKey: string
 ): Promise<string> => {
   const baseUrl = RELAY_PROXY_BASE_URL;
-  const modelCandidates =
-    state.selectedModel === "gemini-3-flash-preview"
-      ? ["gemini-3-flash-preview", "gemini-3-pro-image-preview"]
-      : [state.selectedModel];
+  const modelCandidates = [state.selectedModel];
 
   // Interpolate Prompt
   const prompt = CORE_PROMPT_TEMPLATE

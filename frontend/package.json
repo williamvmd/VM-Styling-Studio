@@ -13,7 +13,6 @@
     "deploy:github-pages": "npm run build:github-pages && gh-pages -d dist"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "lucide-react": "^0.460.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

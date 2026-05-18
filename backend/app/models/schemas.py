@@ -15,13 +15,13 @@ class BackgroundMode(str, Enum):
 
 class ModelTier(str, Enum):
     PRO = "gemini-3-pro-image-preview"
-    FLASH = "gemini-2.5-flash-image"
+    FLASH = "gemini-3-flash-preview"
 
 
 class GenerateRequest(BaseModel):
     gender: Gender
     background_mode: BackgroundMode
-    selected_poses: List[str] = Field(..., min_items=1, max_items=3)
+    selected_poses: List[str] = Field(..., min_length=1, max_length=3)
     selected_model: ModelTier = ModelTier.PRO
 
     class Config:

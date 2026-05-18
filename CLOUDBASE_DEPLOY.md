@@ -5,7 +5,7 @@
 - 前端继续使用当前已经改好的同域 `/api/gemini`
 - 静态页面放到 CloudBase 静态网站托管
 - `/api/gemini` 交给 CloudBase 云函数代理到 `http://zx2.52youxi.cc:3000`
-- 页面里的 Relay API Key 仍然由你手动输入，代码不会把它写进浏览器 `localStorage`
+- 页面里的 Relay API Key 仍然由你手动输入，代码会将它保存到浏览器 `localStorage`，刷新页面后自动恢复
 
 ## 这套方案为什么可行
 

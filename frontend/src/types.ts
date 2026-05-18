@@ -1,6 +1,6 @@
 export type Gender = 'female' | 'male';
 export type BackgroundMode = 'white' | 'keep_original';
-export type ModelTier = 'gemini-3-pro-image-preview' | 'gemini-3-flash-preview';
+export type ModelTier = 'gpt-image-2';
 export type AspectRatio = '9:16' | '16:9' | '1:1' | '3:4' | '4:3';
 
 export interface Pose {
